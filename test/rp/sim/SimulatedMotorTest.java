@@ -3,6 +3,7 @@ package rp.sim;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import lejos.robotics.RegulatedMotor;
+import lejos.robotics.RegulatedMotorListener;
 import lejos.util.Delay;
 
 import org.junit.Test;
@@ -173,6 +174,39 @@ public class SimulatedMotorTest {
 			assertTrue("Rotation for " + target + "went too far",
 					motor.getTachoCount() <= target + 2);
 		}
+	}
+
+	private class TestListener implements RegulatedMotorListener {
+
+		public int started = 0;
+		public int stopped = 0;
+
+		@Override
+		public void rotationStarted(RegulatedMotor _motor, int _tachoCount,
+				boolean _stalled, long _timeStamp) {
+			started++;
+		}
+
+		@Override
+		public void rotationStopped(RegulatedMotor _motor, int _tachoCount,
+				boolean _stalled, long _timeStamp) {
+			stopped++;
+		}
+	}
+
+	@Test
+	public void testListener() {
+		TestListener listener = new TestListener();
+		assertTrue(listener.started == 0);
+		assertTrue(listener.stopped == 0);
+		RegulatedMotor motor = new SimulatedMotor();
+		motor.addListener(listener);
+		int count = 5;
+		for (int i = 0; i < count; i++) {
+			motor.rotate(180, false);
+		}
+		assertTrue(listener.started == 5);
+		assertTrue(listener.stopped == 5);
 	}
 
 }
